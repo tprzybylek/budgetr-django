@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Last operations{% endblock %}
+
+{% block content %}
+    <h1>Budgets</h1>
+    <p>Your budgets:</p>
+    <table>
+        {% for budget in budgets %}
+        <tr>
+            <td>{{ budget.pk }}</td>
+            <td>{{ budget.name }}</td>
+            <td>{{ budget.value }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="{% url 'budget_add_budget' %}">Add budget</a>
+{% endblock %}

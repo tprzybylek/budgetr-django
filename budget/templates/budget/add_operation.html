@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Add operation{% endblock %}
+
+{% block content %}
+    <h1>Add operation</h1>
+    <p>Fill the form to add a new operation:</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ user_form.as_p }}
+        <input type="submit" value="Add">
+    </form>
+{% endblock %}

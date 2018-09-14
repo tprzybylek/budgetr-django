@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Categories{% endblock %}
+
+{% block content %}
+    <h1>Categories</h1>
+    <p>Your categories:</p>
+    <table>
+        {% for category in categories %}
+            <p>{{ category.pk }} {{ category.name }} {{ category.parent }}</p>
+        {% endfor %}
+
+
+
+
+
+        {% comment %}
+        {% for category in categories %}
+        <tr>
+            <td>{{ category.pk }}</td>
+            <td>{{ category.name }}</td>
+            <td>{{ category.parent }}</td>
+        </tr>
+        {% endfor %}
+        {% endcomment %}
+    </table>
+    <a href="{% url 'budget_add_budget' %}">Add category</a>
+{% endblock %}

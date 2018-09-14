@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} {% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    {% block css %} {% endblock %}
+    {% block scripts %} {% endblock %}
+</head>
+<body>
+    <div id="container">
+        <div id="header">
+            <div class="logo">
+                logo placeholder
+            </div>
+
+            <div class="user">
+                {% if request.user.is_authenticated %}
+                    You are logged in as: {{ request.user.username }}
+                    <a href="{% url 'logout' %}">Log out</a>
+                {% else %}
+                    <a href="{% url 'login' %}">Log in</a>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <div id="menu">
+            {% if request.user.is_authenticated %}
+                <ul class="menu">
+                    <li>
+                        <a href="{% url 'budget_dashboard' %}">Dashboard</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'budget_overview' %}">Overview</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'budget_view_budgets' %}">Budgets</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'budget_view_categories' %}">Categories</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'dashboard' %}">Profile</a>
+                    </li>
+                </ul>
+            {% endif %}
+        </div>
+
+
+
+        <div id="content">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+</body>
+</html>

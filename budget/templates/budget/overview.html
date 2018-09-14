@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% load month_name %}
+
+{% block title %}Monthly overview{% endblock %}
+
+{% load static %}
+    {% block css %}
+        <link rel="stylesheet" href="{% static 'css/graph.css' %}">
+    {% endblock %}
+
+    {% block scripts %}
+        <script src="{% static 'javascript/d3.js' %}" charset="utf-8"></script>
+    {% endblock %}
+
+{% block content %}
+    <h1>Monthly overview</h1>
+
+
+    <ul class="calendar">
+    {% for year in calendar.years %}
+        {% if year == current_year %}
+        <li class="calendar active"><a href="{% url 'budget_overview' %}?active_year={{ year }}&active_month={{ current_month }}">{{ year }}</a></li>
+        {% else %}
+            <li class="calendar"><a href="{% url 'budget_overview' %}?active_year={{ year }}&active_month={{ current_month }}">{{ year }}</a></li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+
+
+    <ul class="calendar">
+    {% for month in calendar.months %}
+        {% if month == current_month %}
+            <li class="calendar active"><a href="{% url 'budget_overview' %}?active_year={{ current_year }}&active_month={{ month }}">{{ month|month_name }}</a></li>
+        {% else %}
+            <li class="calendar"><a href="{% url 'budget_overview' %}?active_year={{ current_year }}&active_month={{ month }}">{{ month|month_name }}</a></li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+
+    <p>Your operations:</p>
+
+    {% if operations != None %}
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th>Value</th>
+            </tr>
+            {% for operation in operations %}
+            <tr>
+                <td>{{ operation.pk }}</td>
+                <td>{{ operation.category }}</td>
+                <td>{{ operation.datetime }}</td>
+                <td class="income-{{ operation.is_income }}">{{ operation.value }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <svg id="chart"></svg>
+    {% else %}
+        There are no operations to show.
+    {% endif %}
+
+
+
+    <script>
+        var DE = d3.formatLocale(
+          {
+          "decimal": ",",
+          "thousands": ".",
+          "grouping": [3],
+          "currency": ["", "€"]
+          });
+
+        var data = {{ categories|safe }};
+
+        var subcategories = [];
+
+        for (var i=0; i<data.length; i++) {
+            for (var j=0; j<data[i].subcategories.length; j++) {
+                subcategories.push(
+                    {category: data[i].subcategories[j].name,
+                    value: data[i].subcategories[j].value
+                })
+            }
+          }
+
+        var width = d3.select("svg#chart").node().getBoundingClientRect().width
+        var height = d3.select("svg#chart").node().getBoundingClientRect().height
+
+        var svg = d3.select("svg#chart"),
+            margin = {top: 20, right: 20, bottom: 100, left: 75};
+            width = width - margin.left - margin.right
+            height = height - margin.top - margin.bottom
+
+        var g = svg.append("g");
+
+        g.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        var x = d3.scaleBand()
+            .rangeRound([0, width])
+            .padding(0.1)
+            .domain(subcategories.map(function(d) {
+                return d.category; }))
+
+        var y = d3.scaleLinear()
+            .rangeRound([height, 0])
+            .domain([0, d3.max(subcategories, function(d) {
+                return d.value})])
+
+        g.selectAll(".bar")
+            .data(subcategories)
+            .enter()
+            .append("rect")
+                .attr("class", function(d) {
+                    if (d.value < 0){
+                        return "bar negative";
+                    } else {
+                        return "bar positive";
+                    }
+                })
+                .attr("x", function(d) { return x(d.category); })
+                .attr("y", function(d) { return y(Math.abs(d.value)); })
+                .attr("width", x.bandwidth())
+                .attr("height", function(d) { return height - y(Math.abs(d.value)); });
+
+        g.append("g")
+            .attr("class", "axis axis-x")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+                .style("text-anchor", "start")
+                .attr("transform", "rotate(45)");
+
+        g.append("g")
+            .attr("class", "axis axis-y")
+            .call(d3.axisLeft(y).ticks(10).tickFormat(DE.format("-$.2f")));
+    </script>
+{% endblock %}
